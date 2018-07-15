@@ -2,8 +2,8 @@ version: '3.6'
 
 services:
   plex:
-    image: plexinc/pms-docker:1.13.2.5154-fd05be322
-    restart: "always"
+    image: plexinc/pms-docker
+    restart: always
     hostname: ${HOSTNAME}
     ports:
       - 32400:32400/tcp
@@ -17,30 +17,18 @@ services:
       - 32414:32414/udp
     environment:
       - TZ=${TZ}
+      - PLEX_UID=${PUID}
+      - PLEX_GID=${PGID}
       - PLEX_CLAIM=${PLEX_CLAIM}
       - ADVERTISE_IP=${ADVERTISE_IP}
-      - PLEX_UID=${PLEX_UID}
-      - PLEX_GID=${PLEX_GID}
       - CHANGE_CONFIG_DIR_OWNERSHIP=${CHANGE_CONFIG_DIR_OWNERSHIP}
     volumes:
       - ${PLEX_CONFIG}:/config
       - ${TRANSCODE_TMP_DIR}:/transcode
-      - ${MEDIA_PATH}:/data
-  ombi:
-    image: linuxserver/ombi:102
-    restart: "always"
-    ports:
-      - 3579:3579/tcp
-      - 3579:3579/udp
-    environment:
-      - TZ=${TZ}
-      - PUID=${PLEX_UID}
-      - PGID=${PLEX_GID}
-    volumes:
-      - ${OMBI_CONFIG}:/config
+      - ${MEDIA_DIR}:/data
   tautulli:
-    image: linuxserver/tautulli:132
-    restart: "always"
+    image: linuxserver/tautulli
+    restart: always
     links:
       - plex
     ports:
@@ -48,8 +36,77 @@ services:
       - 8181:8181/udp
     environment:
       - TZ=${TZ}
-      - PUID=${PLEX_UID}
-      - PGID=${PLEX_GID}
+      - PUID=${PUID}
+      - PGID=${PGID}
     volumes:
       - ${TAUTULLI_CONFIG}:/config
       - ${PLEX_CONFIG}/Library/Application Support/Plex Media Server/Logs:/logs:ro
+  ombi:
+    image: linuxserver/ombi
+    restart: always
+    ports:
+      - 3579:3579/tcp
+      - 3579:3579/udp
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${OMBI_CONFIG}:/config
+  sonarr:
+    image: linuxserver/sonarr
+    restart: always
+    ports:
+      - 8989:8989
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${SONARR_CONFIG}:/config
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
+      - ${MEDIA_DIR}/tv-shows:/tv
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    restart: always
+    ports:
+      - ${QBIT_WEBUI_PORT}:${QBIT_WEBUI_PORT}
+      - 6881:6881/tcp
+      - 6881:6881/udp
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=${UMASK_SET}
+      - WEBUI_PORT=${QBIT_WEBUI_PORT}
+    volumes:
+      - ${QBIT_CONFIG}:/config
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/downloads
+  jackett:
+    image: linuxserver/jackett
+    restart: always
+    ports:
+      - 9117:9117
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${JACKETT_CONFIG}:/config
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/downloads
+#  sabnzbd:
+#    image: linuxserver/sabnzbd
+#    restart: always
+#    ports:
+#      - ${SABNZBD_PORT}:8080
+#    environment:
+#      - TZ=${TZ}
+#      - PUID=${PUID}
+#      - PGID=${PGID}
+#    volumes:
+#      - ${SABNZBD_CONFIG}:/config
+#      - ${SABNZBD_INCOMPLETE_DOWNLOADS_DIR}:/incomplete-downloads
+#      - ${SABNZBD_COMPLETE_DOWNLOADS_DIR}:/downloads
+
