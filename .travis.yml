@@ -1,0 +1,16 @@
+sudo: required
+
+services:
+  - docker
+  - docker-compose
+
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
+  - sudo service docker restart
+  - curl -L https://github.com/docker/compose/releases/download/1.20.1-rc1/docker-compose-`uname -s`-`uname -m` > /docker-compose
+  - sudo rm -rf /docker-compose
+  - sudo mv /home/nhal/docker-compose /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
