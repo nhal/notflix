@@ -82,7 +82,7 @@ services:
     volumes:
       - ${QBIT_CONFIG}:/config
       - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
-      - ${INCOMPLETE_DOWNLOADS_DIR}:/downloads
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
   jackett:
     image: linuxserver/jackett
     restart: always
