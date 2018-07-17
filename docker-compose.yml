@@ -66,23 +66,26 @@ services:
       - ${SONARR_CONFIG}:/config
       - ${COMPLETE_DOWNLOADS_DIR}:/downloads
       - ${MEDIA_DIR}/tv-shows:/tv
-  qbittorrent:
-    image: linuxserver/qbittorrent
+  rutorrent:
+    image: linuxserver/rutorrent
     restart: always
     ports:
-      - ${QBIT_WEBUI_PORT}:${QBIT_WEBUI_PORT}
+      - ${RU_WEBUI_PORT}:80
       - 6881:6881/tcp
       - 6881:6881/udp
+      - 5001:5000/tcp
+      - 5001:5000/udp
+      - 51413:51413/tcp
+      - 51413:51413/udp
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
-      - UMASK_SET=${UMASK_SET}
-      - WEBUI_PORT=${QBIT_WEBUI_PORT}
     volumes:
-      - ${QBIT_CONFIG}:/config
-      - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
-      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
+      - ${RU_CONFIG}:/config
+      - ${RU_MATERIAL_THEME}:/usr/share/webapps/rutorrent/plugins/theme/themes/material-design
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/downloads/incoming
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads/completed
   jackett:
     image: linuxserver/jackett
     restart: always
