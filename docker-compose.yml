@@ -57,7 +57,7 @@ services:
     image: linuxserver/sonarr
     restart: always
     ports:
-      - 8989:8989
+        - 8989:8989
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
@@ -66,6 +66,19 @@ services:
       - ${SONARR_CONFIG}:/config
       - ${COMPLETE_DOWNLOADS_DIR}:/downloads
       - ${MEDIA_DIR}/tv-shows:/tv
+  radarr:
+    image: linuxserver/radarr
+    restart: always
+    ports:
+      - 7878:7878
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${RADARR_CONFIG}:/config
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
+      - ${MEDIA_DIR}/movies:/movies
   qbittorrent:
     image: linuxserver/qbittorrent
     restart: always
