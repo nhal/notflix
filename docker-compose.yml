@@ -1,6 +1,17 @@
 version: '3.6'
 
 services:
+  organizr:
+    image: lsiocommunity/organizr
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${ORGANIZR_CONFIG}:/config
   plex:
     image: plexinc/pms-docker
     restart: always
