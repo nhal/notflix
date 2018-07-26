@@ -1,21 +1,60 @@
 version: '3.6'
 
+networks:
+  gateway:
+    driver: bridge
+
 services:
+  traefik:
+    image: library/traefik:1.6
+    command: --web --docker --docker.domain=traefik --logLevel=INFO
+    restart: always
+    networks:
+      - default
+      - gateway
+    ports:
+      - 80:80
+      - 443:443
+      - 82:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=traefik"
+      - "traefik.frontend.rule=Host:traefik.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /traefik"
+      - "traefik.port=8080"
+      - "traefik.docker.network=notflix_gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/null:/traefik.toml
   organizr:
     image: lsiocommunity/organizr
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
-      - 80:80
+      - 81:80
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=organizr"
+      - "traefik.frontend.rule=Host:organizr.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip:/organizr"
+      - "traefik.port=80"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${ORGANIZR_CONFIG}:/config
   plex:
     image: plexinc/pms-docker
     restart: always
     hostname: ${HOSTNAME}
+    networks:
+      - default
+      - gateway
     ports:
       - 32400:32400/tcp
       - 3005:3005/tcp
@@ -42,6 +81,9 @@ services:
     restart: always
     links:
       - plex
+    networks:
+      - default
+      - gateway
     ports:
       - 8181:8181/tcp
       - 8181:8181/udp
@@ -49,12 +91,23 @@ services:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=tautulli"
+      - "traefik.frontend.rule=Host:tautulli.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /tautulli"
+      - "traefik.port=8181"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${TAUTULLI_CONFIG}:/config
       - ${PLEX_CONFIG}/Library/Application Support/Plex Media Server/Logs:/logs:ro
   ombi:
     image: linuxserver/ombi
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
       - 3579:3579/tcp
       - 3579:3579/udp
@@ -62,17 +115,35 @@ services:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=ombi"
+      - "traefik.frontend.rule=Host:ombi.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /ombi"
+      - "traefik.port=3579"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${OMBI_CONFIG}:/config
   sonarr:
     image: linuxserver/sonarr
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
         - 8989:8989
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=sonarr"
+      - "traefik.frontend.rule=Host:sonarr.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /sonarr"
+      - "traefik.port=8989"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${SONARR_CONFIG}:/config
       - ${COMPLETE_DOWNLOADS_DIR}:/downloads
@@ -80,12 +151,23 @@ services:
   radarr:
     image: linuxserver/radarr
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
       - 7878:7878
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=radarr"
+      - "traefik.frontend.rule=Host:radarr.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /radarr"
+      - "traefik.port=7878"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${RADARR_CONFIG}:/config
       - ${COMPLETE_DOWNLOADS_DIR}:/downloads
@@ -93,6 +175,9 @@ services:
   qbittorrent:
     image: linuxserver/qbittorrent
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
       - ${QBIT_WEBUI_PORT}:${QBIT_WEBUI_PORT}
       - 6881:6881/tcp
@@ -103,6 +188,14 @@ services:
       - PGID=${PGID}
       - UMASK_SET=${UMASK_SET}
       - WEBUI_PORT=${QBIT_WEBUI_PORT}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=qbittorrent"
+      - "traefik.frontend.rule=Host:qbittorrent.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /qbittorrent"
+      - "traefik.port=${QBIT_WEBUI_PORT}"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${QBIT_CONFIG}:/config
       - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
@@ -110,12 +203,23 @@ services:
   jackett:
     image: linuxserver/jackett
     restart: always
+    networks:
+      - default
+      - gateway
     ports:
       - 9117:9117
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=jackett"
+      - "traefik.frontend.rule=Host:jackett.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /jackett"
+      - "traefik.port=9117"
+      - "traefik.docker.network=notflix_gateway"
     volumes:
       - ${JACKETT_CONFIG}:/config
       - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
