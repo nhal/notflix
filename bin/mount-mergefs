@@ -3,7 +3,7 @@
 ####################
 ###   Binaries   ###
 ####################
-MERGEFS=$(which mergefs)
+MERGERFS=$(which mergerfs)
 ####################
 
-sudo ${MERGEFS} -o defaults,allow_other,use_ino,fsname=pokedex /media/nhal/647ed82d-db14-4c6a-aa5e-5b4dfc07a23f/:/media/nhal/4c2cf4ee-ea84-4307-a837-55eb9f8f7d00/:/media/nhal/33fa6093-6b19-4d3d-a71e-b27ee8c6a984/:/media/nhal/ee452192-6d62-4881-a3fe-378a7faaedf5/ /mnt/pokedex/
+sudo ${MERGERFS} -o defaults,allow_other,use_ino,fsname=pokedex /media/nhal/647ed82d-db14-4c6a-aa5e-5b4dfc07a23f/:/media/nhal/4c2cf4ee-ea84-4307-a837-55eb9f8f7d00/:/media/nhal/33fa6093-6b19-4d3d-a71e-b27ee8c6a984/:/media/nhal/ee452192-6d62-4881-a3fe-378a7faaedf5/ /mnt/pokedex/
