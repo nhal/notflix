@@ -224,17 +224,51 @@ services:
       - ${JACKETT_CONFIG}:/config
       - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete
       - ${INCOMPLETE_DOWNLOADS_DIR}:/downloads
-#  sabnzbd:
-#    image: linuxserver/sabnzbd
-#    restart: always
-#    ports:
-#      - ${SABNZBD_PORT}:8080
-#    environment:
-#      - TZ=${TZ}
-#      - PUID=${PUID}
-#      - PGID=${PGID}
-#    volumes:
-#      - ${SABNZBD_CONFIG}:/config
-#      - ${SABNZBD_INCOMPLETE_DOWNLOADS_DIR}:/incomplete-downloads
-#      - ${SABNZBD_COMPLETE_DOWNLOADS_DIR}:/downloads
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    restart: always
+    networks:
+      - default
+      - gateway
+    ports:
+      - ${SABNZBD_PORT}:8080
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=sabnzbd"
+      - "traefik.frontend.rule=Host:sabnzbd.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /sabnzbd"
+      - "traefik.port=8080"
+      - "traefik.docker.network=notflix_gateway"
+    volumes:
+      - ${SABNZBD_CONFIG}:/config
+      - ${INCOMPLETE_DOWNLOADS_DIR}:/incomplete-downloads
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
+  nzbhydra:
+    image: linuxserver/hydra
+    restart: always
+    networks:
+      - default
+      - gateway
+    ports:
+      - ${NZBHYDRA_PORT}:5075
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.auth.basic=${BAUTH_USER}:${BAUTH_PASSWORD}"
+      - "traefik.backend=nzbhydra"
+      - "traefik.frontend.rule=Host:nzbhydra.${DOMAINNAME}"
+#      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /nzbhydra"
+      - "traefik.port=5075"
+      - "traefik.docker.network=notflix_gateway"
+    volumes:
+      - ${NZBHYDRA_CONFIG}:/config
+      - ${COMPLETE_DOWNLOADS_DIR}:/downloads
 
